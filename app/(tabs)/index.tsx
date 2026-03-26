@@ -1,12 +1,12 @@
-import { Text, View,StyleSheet } from "react-native";
-import{Link} from 'expo-router';
+import { Link } from 'expo-router';
+import { StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}> Pagina Inicial </Text>
       <Link href="/about" style={styles.button}>
-        Sobre Nos
+        Sobre Nós
       </Link>
     </View>
   );
@@ -15,16 +15,16 @@ export default function Index() {
 const styles = StyleSheet.create({
   container:{
     flex:1,
-    backgroundColor:'#25292e',
+    backgroundColor:'#f8f8f8ff',
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
-    color:'#ffffffff',
+    color:'#000000ff',
   },
   button:{
     fontSize:20,
     textDecorationLine:'underline',
-    color:'#fff',
+    color:'#000000ff',
   },
 });
