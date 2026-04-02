@@ -1,6 +1,8 @@
 import{Tabs} from "expo-router";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+
 export default function TabLayout(){
     return(
         <Tabs
