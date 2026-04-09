@@ -1,21 +1,21 @@
 import React from 'react';
 import {View,Text,TextInput,Button,FlatList,TouchableOpacity,StyleSheet} from 'react-native';
-import { useTarefas } from '../../hooks/useTarefas';
+import { useTarefas } from '@/hooks/useTarefas';
 
 export default function App(){
     const { tarefas, novaTarefa, setNovaTarefa, adicionarTarefa, removerTarefa} = useTarefas();
 
     return(
         <View style={styles.container}>
-            <Text style={styles.titulo}>Lista de Tarefas</Text>
+            <Text style={styles.titulo}>Lista de Entregas</Text>
             <View style={styles.inputContainer}>
                 <TextInput 
                     style={styles.input}
-                    placeholder="Digite uma tarefa..."
+                    placeholder="Digite o Endereço de Entrega"
                     value={novaTarefa}
                     onChangeText={setNovaTarefa}
                 />
-                <Button title="Adicionar" onPress={adicionarTarefa}/>
+                <Button title="Adicionar Entrega" onPress={adicionarTarefa} />
             </View>
             <FlatList
                 data={tarefas}
@@ -34,6 +34,7 @@ export default function App(){
 }
 
 const styles = StyleSheet.create({
+    button:{fontSize:20,textDecorationLine:'underline',color:'#fff',backgroundColor:'#000000ff',padding:10,borderRadius:5},
     container:{flex:1,padding:20,backgroundColor:'#f4f4f4'},
     titulo:{fontSize:24,fontWeight:'bold',textAlign:'center',marginBottom:20},
     inputContainer:{flex:1,borderWidth:10},
