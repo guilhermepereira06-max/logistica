@@ -35,6 +35,19 @@ export default function TabLayout(){
             <Tabs.Screen name="toDoList" options={{title:'Lista de Entregas',tabBarIcon:({ color,focused })=>(
                 <MaterialCommunityIcons name={focused ? 'truck-delivery' : 'truck-delivery-outline'}color={color}size={24}/>
                 ),}}></Tabs.Screen>
+            <Tabs.Screen
+                name="painel"
+                options={{
+                    title:'Painel',
+                    tabBarIcon:({ color,focused })=>(
+                        <MaterialCommunityIcons
+                            name={focused ? 'view-dashboard' : 'view-dashboard-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }

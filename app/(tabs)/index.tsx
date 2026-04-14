@@ -3,7 +3,7 @@ import ImageViewer from '@/components/ImageViewer';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { StyleSheet, View } from "react-native";
-const PlaceholderImage = require('@/assets/images/background-image.png');
+const PlaceholderImage = require('@/assets/images/Logistica.png');
 
 
 export default function Index() {
