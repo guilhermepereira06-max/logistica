@@ -101,7 +101,7 @@ export default function Painel() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.mapCard}>
         <Text style={styles.sectionTitle}>Mapa rápido</Text>
-        <Text style={styles.sectionDescription}>Selecione uma rota para ver o trajeto (preview).</Text>
+        <Text style={styles.sectionDescription}>Selecione uma rota para ver o trajeto .</Text>
 
         <View style={styles.mapControls}>
           {routeState.map((r) => (

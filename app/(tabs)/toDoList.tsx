@@ -1,5 +1,5 @@
 import React from 'react';
-import {View,Text,TextInput,Button,FlatList,TouchableOpacity,StyleSheet} from 'react-native';
+import {View,Text,TextInput,Button,FlatList,TouchableOpacity,StyleSheet,ScrollView} from 'react-native';
 import { useTarefas } from '@/hooks/useTarefas';
 
 export default function App(){
