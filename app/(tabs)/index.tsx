@@ -1,17 +1,21 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
 import { Link } from 'expo-router';
+import { Image } from 'expo-image';
+
+const PlaceholderImage = require('@/assets/images/banner.png');
 
 export default function Index() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        
+        <View style={styles.imageContainer}> 
+          <Image source={PlaceholderImage} style={styles.image}/>
+        </View>        
         <View style={styles.textWrapper}>
           <Text style={styles.mainTitle}>Logística Express</Text>
           <Text style={styles.description}>Sua carga, nossa tecnologia. Gerencie entregas, registre ocorrências e otimize seu tempo.</Text>
         </View>
-
         <View style={styles.instructionWrapper}>
           <Text style={styles.instructionTitle}>Central de Operações</Text>
           <Text style={styles.instructionText}>
@@ -29,8 +33,10 @@ export default function Index() {
           <Link href="/painel" asChild>
             <TouchableOpacity style={styles.navButton}><Text style={styles.navText}>Painel de Controle</Text></TouchableOpacity>
           </Link>
+          <Link href="/cep" asChild>
+            <TouchableOpacity style={styles.navButton}><Text style={styles.navText}>Consulta de CEP</Text></TouchableOpacity>
+          </Link>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -43,6 +49,8 @@ const styles = StyleSheet.create({
   mainTitle: {fontSize: 32, fontWeight: '900', color: '#111111', letterSpacing: 0.5, textAlign: 'center'},
   description: {fontSize: 16, color: '#111111', textAlign: 'center', lineHeight: 24, marginTop: 10},
   instructionWrapper: {width: '100%', paddingHorizontal: 35, marginBottom: 25},
+  imageContainer: {width: '100%',alignItems: 'center',justifyContent: 'center',marginVertical: 20,},
+  image: {width: '80%',maxWidth: 800,aspectRatio: 16 / 9,borderRadius: 12,},
   instructionTitle: {fontSize: 18, fontWeight: '700', color: '#111111', marginBottom: 6, textAlign: 'center'},
   instructionText: {fontSize: 14, color: '#111111', textAlign: 'center', lineHeight: 20},
   navBar: {width: '100%', alignItems: 'center', gap: 15, paddingHorizontal: 30},

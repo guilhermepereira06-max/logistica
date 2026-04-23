@@ -1,7 +1,7 @@
 import{Tabs} from "expo-router";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 
 export default function TabLayout(){
@@ -47,6 +47,13 @@ export default function TabLayout(){
                         />
                     ),
                 }}
+            />
+            <Tabs.Screen name="cep" options={{
+                title:'CEP',
+                tabBarIcon:({ color,focused })=>(
+                <FontAwesome5 name={focused ? 'map-marked' : 'map-marked-alt'}color={color}size={24}/>
+                ),
+            }}
             />
         </Tabs>
     );
