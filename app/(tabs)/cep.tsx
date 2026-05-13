@@ -1,6 +1,6 @@
-import{ useState } from 'react';
-import{Button,StyleSheet,Text,TextInput,Dimensions,View} from 'react-native';
 import { Image } from 'expo-image';
+import { useState } from 'react';
+import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 interface Endereco{
     logradouro:string;

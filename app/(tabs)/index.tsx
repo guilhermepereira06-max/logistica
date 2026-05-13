@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
-import { Link } from 'expo-router';
 import { Image } from 'expo-image';
+import { Link } from 'expo-router';
+import React from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const PlaceholderImage = require('@/assets/images/banner.png');
 

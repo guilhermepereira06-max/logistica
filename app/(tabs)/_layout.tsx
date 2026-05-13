@@ -55,6 +55,13 @@ export default function TabLayout(){
                 ),
             }}
             />
+            <Tabs.Screen name="imagem" options={{
+                title:'IMAGEM',
+                tabBarIcon:({ color,focused })=>(
+                <FontAwesome5 name={focused ? 'map-marked' : 'map-marked-alt'}color={color}size={24}/>
+                ),
+            }}
+            />
         </Tabs>
     );
 }
