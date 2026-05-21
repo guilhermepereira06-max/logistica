@@ -12,7 +12,7 @@ export default function Button({label,theme,onPress }:Props){
         <View style={[styles.buttonContainer,
                        {borderWidth:4,borderColor:'#ffd33d',borderRadius:18},
         ]}>
-            <Pressable style={styles.button} onPress={onPress}>
+            <Pressable style={[styles.button,{backgroundColor:'#fff'}]} onPress={onPress}>
                 <FontAwesome name="truck" size={18} color="#000000ff" style={styles.buttonIcon}/>
                 <Text style={styles.buttonLabel}>{label}</Text>
             </Pressable>
@@ -20,6 +20,13 @@ export default function Button({label,theme,onPress }:Props){
     )
 }
 
+return(
+    <View style={styles.buttonContainer}>
+        <Pressable style={styles.button} onPress={onPress}>
+            <Text style={styles.buttonLabel}>{label}</Text>
+        </Pressable>
+    </View>
+)
 }
 
 const styles = StyleSheet.create({
@@ -45,9 +52,5 @@ const styles = StyleSheet.create({
     buttonLabel:{
         color:'#000000ff',
         fontSize:16,
-        paddingHorizontal:20,
-        paddingVertical:10,
-        borderRadius:5,
-        textAlign:'center',
     },
 });
