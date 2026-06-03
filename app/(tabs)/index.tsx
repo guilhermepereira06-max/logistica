@@ -36,6 +36,9 @@ export default function Index() {
           <Link href="/cep" asChild>
             <TouchableOpacity style={styles.navButton}><Text style={styles.navText}>Consulta de CEP</Text></TouchableOpacity>
           </Link>
+          <Link href="/imagem" asChild>
+            <TouchableOpacity style={styles.navButton}><Text style={styles.navText}>Adicionar Emojis na Imagem</Text></TouchableOpacity>
+          </Link>
         </View>
       </ScrollView>
     </SafeAreaView>

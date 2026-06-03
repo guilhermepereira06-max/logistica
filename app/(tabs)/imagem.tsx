@@ -1,18 +1,42 @@
 import Button from "@/components/Button";
+import CircleButton from "@/components/CircleButton";
+import EmojiList from "@/components/EmojiList";
+import EmojiPicker from "@/components/EmojiPicker";
+import EmojiSticker from "@/components/EmojiStricker";
+import IconButton from "@/components/IconButton";
 import ImageViewer from "@/components/ImageViewer";
 import * as ImagePicker from 'expo-image-picker';
-import { StyleSheet, View } from "react-native";
-import {useState} from 'react';
-import IconButton from "@/components/IconButton";
-import CircleButton from "@/components/CircleButton";
-import EmojiPicker from "@/components/EmojiPicker";
+import * as MediaLibrary from 'expo-media-library';
+import { useRef, useState } from 'react';
+import { ImageSourcePropType, StyleSheet, View } from "react-native";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { captureRef } from 'react-native-view-shot';
 
 const PlaceholderImage = require('@/assets/images/banner.png');
 
 export default function Imagem() {
+    const imageRef = useRef<any>(null);
+    const [status, requestPermission] = MediaLibrary.usePermissions();
+    const onSaveImageAsync = async () => {
+        try {
+            const localUri = await captureRef(imageRef, {
+                height: 440,
+                quality: 1,
+            });
+
+            await MediaLibrary.saveToLibraryAsync(localUri);
+            if(localUri) {
+                alert('Imagem salva com sucesso!');
+            }
+            } catch(e){
+                alert('Erro ao salvar imagem! ve o console para mais detalhes');
+                console.log(e);
+            }
+        };
     const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
     const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+    const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
     const pickImageAsync = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
@@ -36,13 +60,16 @@ export default function Imagem() {
     const onModalClose = () => {
         setIsModalVisible(false);
     }
-    const onSaveImageAsync = () => {
-        alert('Salvar imagem');
-    };
+     if(status === null){
+        requestPermission();
+     }
     return(
-        <View style={styles.container}>
+        <GestureHandlerRootView style={styles.container}>
             <View style={styles.imageContainer}>
-                <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+                <View ref={imageRef} collapsable={false}>
+                    <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+                    {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+                </View>
             </View>
             {showAppOptions ? (
                 <View style={styles.optionsContainer}>
@@ -59,9 +86,9 @@ export default function Imagem() {
             </View>
             )}
             <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
-
+                <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose}/>
             </EmojiPicker>
-        </View>
+        </GestureHandlerRootView>
     );
 }
 
