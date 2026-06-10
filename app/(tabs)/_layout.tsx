@@ -88,7 +88,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="rotas"
         options={{
-          title: "APIs / Rotas",
+          title: "Rotas entre cidades",
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "map-marker-path" : "map-marker-path"}

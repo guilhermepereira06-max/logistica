@@ -14,27 +14,27 @@ const services = [
     icon: "map-marker-radius",
     accent: "#ce1313",
     description:
-      "Resolve o endereço completo a partir do CEP informado pelo usuário.",
-    example: "01001-000 → Praça da Sé, Sé, São Paulo - SP",
-    use: "Consulta de CEP e localização textual.",
+      "Resolve o endereço completo a partir do CEP para identificar cidade, bairro e estado.",
+    example: "01001-000 → São Paulo - SP",
+    use: "Consulta de CEP com foco em localização urbana entre cidades.",
   },
   {
     title: "Nominatim",
     icon: "map-search-outline",
     accent: "#0f766e",
     description:
-      "Converte texto de endereço em coordenadas geográficas (latitude e longitude).",
-    example: "Praça da Sé, São Paulo → -23.5505, -46.6333",
-    use: "Geocodificação para localizar o ponto no mapa.",
+      "Converte o nome da cidade e estado em coordenadas geográficas (latitude e longitude).",
+    example: "São Paulo, SP → -23.5505, -46.6333",
+    use: "Geocodificação para localizar a cidade no mapa.",
   },
   {
     title: "OSRM",
     icon: "routes",
     accent: "#7c3aed",
     description:
-      "Calcula a rota real pelas ruas, avenidas e rodovias para desenhar a linha azul.",
-    example: "Origem + Destino → polyline com o trajeto otimizado.",
-    use: "Roteamento e navegação visual na interface.",
+      "Calcula a rota real entre duas cidades usando ruas, avenidas e rodovias.",
+    example: "São Paulo → Rio de Janeiro → trajeto otimizado entre cidades.",
+    use: "Roteamento visual para mostrar a rota entre cidades.",
   },
 ];
 
@@ -49,17 +49,18 @@ export default function RotasPage() {
         />
         <Text style={styles.heroTitle}>BrasilAPI + Nominatim + OSRM</Text>
         <Text style={styles.heroSubtitle}>
-          Uma stack simples e gratuita para descobrir endereços, geocodificar
-          pontos e montar rotas reais no mapa.
+          Uma stack simples e gratuita para localizar cidades, converter
+          endereços em coordenadas e montar rotas reais entre uma cidade e
+          outra.
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.sectionLabel}>Fluxo recomendado</Text>
         <Text style={styles.paragraph}>
-          1. A BrasilAPI devolve o endereço completo a partir do CEP.{"\n"}
-          2. O Nominatim transforma esse endereço em latitude e longitude.{"\n"}
-          3. O OSRM entrega o trajeto real entre origem e destino, que o Leaflet
+          1. A BrasilAPI identifica a cidade e o estado a partir do CEP.{"\n"}
+          2. O Nominatim transforma essa cidade em latitude e longitude.{"\n"}
+          3. O OSRM monta a rota real entre uma cidade e outra, que o Leaflet
           Routing Machine desenha na tela.
         </Text>
       </View>
@@ -94,9 +95,9 @@ export default function RotasPage() {
         <Text style={styles.sectionLabel}>Resumo técnico</Text>
         <Text style={styles.paragraph}>
           No backend você pode usar fetch/axios para consultar a BrasilAPI e o
-          Nominatim. No frontend, o React Leaflet com Leaflet Routing Machine já
-          conversa com o OSRM para desenhar a rota azul do mapa, mantendo a
-          experiência visual e a lógica de navegação separadas.
+          Nominatim. No frontend, o React Leaflet com Leaflet Routing Machine
+          conversa com o OSRM para desenhar a rota azul entre cidades, mantendo
+          a experiência visual e a lógica de navegação separadas.
         </Text>
       </View>
 
