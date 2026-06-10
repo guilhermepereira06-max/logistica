@@ -1,211 +1,161 @@
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import React, { useState } from "react";
+import {StyleSheet,Text,TextInput,TouchableOpacity,View,ActivityIndicator,Keyboard,} from "react-native";
 import { Link } from "expo-router";
-import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import axios from "axios";
 
-const services = [
-  {
-    title: "BrasilAPI",
-    icon: "map-marker-radius",
-    accent: "#ce1313",
-    description:
-      "Resolve o endereço completo a partir do CEP para identificar cidade, bairro e estado.",
-    example: "01001-000 → São Paulo - SP",
-    use: "Consulta de CEP com foco em localização urbana entre cidades.",
-  },
-  {
-    title: "Nominatim",
-    icon: "map-search-outline",
-    accent: "#0f766e",
-    description:
-      "Converte o nome da cidade e estado em coordenadas geográficas (latitude e longitude).",
-    example: "São Paulo, SP → -23.5505, -46.6333",
-    use: "Geocodificação para localizar a cidade no mapa.",
-  },
-  {
-    title: "OSRM",
-    icon: "routes",
-    accent: "#7c3aed",
-    description:
-      "Calcula a rota real entre duas cidades usando ruas, avenidas e rodovias.",
-    example: "São Paulo → Rio de Janeiro → trajeto otimizado entre cidades.",
-    use: "Roteamento visual para mostrar a rota entre cidades.",
-  },
-];
+import MapComponent from "../../components/MapComponent";
+
+type Coord = { latitude: number; longitude: number };
+type RouteItem = {
+  id: string;
+  rota: string;
+  horario: string;
+  carga: string;
+  status: string;
+  statusColor: string;
+  coords: Coord[];
+};
 
 export default function RotasPage() {
+  const [origemInput, setOrigemInput] = useState("");
+  const [destinoInput, setDestinoInput] = useState("");
+  const [carregando, setCarregando] = useState(false);
+  
+  const [routeState, setRouteState] = useState<RouteItem[]>([]);
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  
+  const buscarDadosDoLocal = async (entrada: string) => {
+    const termoDeBusca = entrada.trim();
+    const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      termoDeBusca
+    )}&limit=5&addressdetails=1&email=applogistica@exemplo.com`;
+    
+    const osmRes = await axios.get(osmUrl);
+
+    if (osmRes.data.length === 0) {
+      throw new Error(`Local não encontrado: ${entrada}`);
+    }
+
+    const tiposPermitidos = ['city', 'town', 'village', 'municipality', 'state', 'country', 'administrative'];
+
+    const localValido = osmRes.data.find((item: any) => 
+      tiposPermitidos.includes(item.addresstype) || tiposPermitidos.includes(item.type)
+    );
+
+    if (!localValido) {
+      throw new Error(`"${entrada}" é um local muito específico. Por favor, digite apenas nomes de Cidades, Estados ou Países.`);
+    }
+
+    return {
+      latitude: parseFloat(localValido.lat),
+      longitude: parseFloat(localValido.lon),
+      endereco: localValido.display_name,
+    };
+  };
+
+  const calcularCaminho = async () => {
+    if (!origemInput || !destinoInput) {
+      alert("Preencha a origem e o destino!");
+      return;
+    }
+
+    Keyboard.dismiss();
+    setCarregando(true);
+
+    try {
+      const dadosOrigem = await buscarDadosDoLocal(origemInput);
+      const dadosDestino = await buscarDadosDoLocal(destinoInput);
+
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${dadosOrigem.longitude},${dadosOrigem.latitude};${dadosDestino.longitude},${dadosDestino.latitude}?overview=full&geometries=geojson`;
+      const osrmRes = await axios.get(osrmUrl);
+
+      const coordenadasDaRota = osrmRes.data.routes[0].geometry.coordinates.map((coord: any) => ({
+        latitude: coord[1],
+        longitude: coord[0],
+      }));
+
+      const novaRota: RouteItem = {
+        id: "rota-calculada-1",
+        rota: `${origemInput} -> ${destinoInput}`,
+        horario: new Date().toLocaleTimeString(),
+        carga: "Padrão",
+        status: "Ativa",
+        statusColor: "#ae0e0eff", 
+        coords: coordenadasDaRota
+      };
+
+      setRouteState([novaRota]);
+      setSelectedRouteId(novaRota.id);
+
+    } catch (error: any) {
+      alert(error.message || "Erro ao traçar rota. Verifique os dados digitados.");
+      console.log(error);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.heroCard}>
-        <MaterialCommunityIcons
-          name="map-marker-path"
-          size={44}
-          color="#ce1313"
+    <View style={styles.container}>
+      <View style={styles.mapContainer}>
+        <MapComponent 
+          routeState={routeState} 
+          selectedRouteId={selectedRouteId} 
         />
-        <Text style={styles.heroTitle}>BrasilAPI + Nominatim + OSRM</Text>
-        <Text style={styles.heroSubtitle}>
-          Uma stack simples e gratuita para localizar cidades, converter
-          endereços em coordenadas e montar rotas reais entre uma cidade e
-          outra.
-        </Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>Fluxo recomendado</Text>
-        <Text style={styles.paragraph}>
-          1. A BrasilAPI identifica a cidade e o estado a partir do CEP.{"\n"}
-          2. O Nominatim transforma essa cidade em latitude e longitude.{"\n"}
-          3. O OSRM monta a rota real entre uma cidade e outra, que o Leaflet
-          Routing Machine desenha na tela.
-        </Text>
-      </View>
-
-      {services.map((item) => (
-        <View key={item.title} style={styles.card}>
-          <View style={styles.serviceHeader}>
-            <View style={styles.serviceBadge}>
-              <MaterialCommunityIcons
-                name={item.icon as never}
-                size={22}
-                color={item.accent}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.serviceTitle}>{item.title}</Text>
-              <Text style={styles.serviceText}>{item.description}</Text>
-            </View>
-          </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Exemplo</Text>
-            <Text style={styles.infoText}>{item.example}</Text>
-          </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Uso no app</Text>
-            <Text style={styles.infoText}>{item.use}</Text>
-          </View>
+      <View style={styles.bottomPanel}>
+        <View style={styles.heroCard}>
+          <MaterialCommunityIcons name="map-marker-path" size={32} color="#ce1313" />
+          <Text style={styles.heroTitle}>Traçar Rota</Text>
         </View>
-      ))}
 
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>Resumo técnico</Text>
-        <Text style={styles.paragraph}>
-          No backend você pode usar fetch/axios para consultar a BrasilAPI e o
-          Nominatim. No frontend, o React Leaflet com Leaflet Routing Machine
-          conversa com o OSRM para desenhar a rota azul entre cidades, mantendo
-          a experiência visual e a lógica de navegação separadas.
-        </Text>
-      </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Origem (Cidade ou País)"
+          value={origemInput}
+          onChangeText={setOrigemInput}
+        />
 
-      <View style={styles.card}>
+        <TextInput
+          style={styles.input}
+          placeholder="Destino (Cidade ou País)"
+          value={destinoInput}
+          onChangeText={setDestinoInput}
+        />
+
+        <TouchableOpacity 
+          style={styles.buttonPrimary} 
+          onPress={calcularCaminho}
+          disabled={carregando}
+        >
+          {carregando ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.buttonText}>CALCULAR CAMINHO</Text>
+          )}
+        </TouchableOpacity>
+
         <Link href="/" asChild>
-          <TouchableOpacity style={styles.buttonPrimary}>
-            <Text style={styles.buttonText}>Voltar ao início</Text>
+          <TouchableOpacity style={styles.buttonSecondary}>
+            <Text style={styles.buttonTextSecondary}>Voltar ao Início</Text>
           </TouchableOpacity>
         </Link>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f4f4f4" },
-  content: { padding: 18, gap: 16, paddingBottom: 36 },
-  heroCard: { alignItems: "center", paddingVertical: 12, paddingBottom: 4 },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: "#111111",
-    textAlign: "center",
-    marginTop: 8,
-  },
-  heroSubtitle: {
-    fontSize: 15,
-    color: "#525252",
-    textAlign: "center",
-    lineHeight: 22,
-    marginTop: 6,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#ae0e0eff",
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 6,
-  },
-  paragraph: {
-    fontSize: 15,
-    color: "#525252",
-    lineHeight: 22,
-    textAlign: "justify",
-  },
-  serviceHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  serviceBadge: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "#fff1f2",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  serviceTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#111111",
-    marginBottom: 4,
-  },
-  serviceText: { fontSize: 14, color: "#525252", lineHeight: 20 },
-  infoBox: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  infoLabel: {
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1.1,
-    color: "#111111",
-    marginBottom: 2,
-  },
-  infoText: { fontSize: 14, color: "#374151", lineHeight: 20 },
-  buttonPrimary: {
-    backgroundColor: "#ae0e0eff",
-    paddingVertical: 14,
-    borderRadius: 12,
-    width: "100%",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
+  mapContainer: { flex: 1, backgroundColor: "#0f172a" },
+  bottomPanel: {backgroundColor: "#ffffff",borderTopLeftRadius: 24,borderTopRightRadius: 24,padding: 20,shadowColor: "#000",shadowOffset: { width: 0, height: -4 },shadowOpacity: 0.1,shadowRadius: 8,elevation: 10,gap: 12,},
+  heroCard: { alignItems: "center", marginBottom: 4 },
+  heroTitle: { fontSize: 20, fontWeight: "900", color: "#111111", marginTop: 4 },
+  input: {backgroundColor: "#f8fafc",borderWidth: 1,borderColor: "#e5e7eb",borderRadius: 12,padding: 14,fontSize: 15,color: "#333",},
+  buttonPrimary: {backgroundColor: "#ae0e0eff",paddingVertical: 14,borderRadius: 12,alignItems: "center",marginTop: 8,},
+  buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "800", textTransform: "uppercase", letterSpacing: 1 },
+  buttonSecondary: { paddingVertical: 12, alignItems: "center" },
+  buttonTextSecondary: { color: "#525252", fontSize: 14, fontWeight: "700" },
 });

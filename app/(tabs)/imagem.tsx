@@ -29,7 +29,7 @@ export default function Imagem() {
                 alert('Imagem salva com sucesso!');
             }
             } catch(e){
-                alert('Erro ao salvar imagem! ve o console para mais detalhes');
+                alert('Erro ao salvar imagem! veja o console para mais detalhes');
                 console.log(e);
             }
         };
