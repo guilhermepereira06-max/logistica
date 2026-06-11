@@ -45,8 +45,7 @@ export default function MapComponent({ routeState, selectedRouteId }: MapCompone
       <div id="map"></div>
       <script>
         var map = L.map('map', { zoomControl: false });
-        
-        // CORREÇÃO: Usando o OpenStreetMap oficial (não bloqueia acessos)
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
@@ -72,7 +71,6 @@ export default function MapComponent({ routeState, selectedRouteId }: MapCompone
             opacity: 0.9
         }).addTo(map);
         
-        // Adiciona um pequeno atraso para garantir que o mapa carregou o tamanho da tela
         setTimeout(() => {
           map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
         }, 100);

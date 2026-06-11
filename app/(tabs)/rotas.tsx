@@ -27,24 +27,38 @@ export default function RotasPage() {
   
   const buscarDadosDoLocal = async (entrada: string) => {
     const termoDeBusca = entrada.trim();
+
     const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
       termoDeBusca
-    )}&limit=5&addressdetails=1&email=applogistica@exemplo.com`;
+    )}&limit=10&addressdetails=1`;
     
-    const osmRes = await axios.get(osmUrl);
+    const osmRes = await axios.get(osmUrl, {
+      headers: {
+        'User-Agent': 'AppLogistica/1.0 (contato@seusite.com)',
+        'Accept': 'application/json'
+      }
+    });
 
     if (osmRes.data.length === 0) {
-      throw new Error(`Local não encontrado: ${entrada}`);
+      throw new Error(`Não encontramos nenhum resultado para "${entrada}".`);
     }
 
-    const tiposPermitidos = ['city', 'town', 'village', 'municipality', 'state', 'country', 'administrative'];
+    const classesPermitidas = ['place', 'boundary'];
+    const tiposPermitidos = [
+      'city', 'town', 'village', 'municipality',
+      'state', 'province', 'region',            
+      'country', 'administrative'               
+    ];
 
-    const localValido = osmRes.data.find((item: any) => 
-      tiposPermitidos.includes(item.addresstype) || tiposPermitidos.includes(item.type)
-    );
+    const localValido = osmRes.data.find((item: any) => {
+      const classe = item.class;
+      const tipo = item.type;
+      
+      return classesPermitidas.includes(classe) && tiposPermitidos.includes(tipo);
+    });
 
     if (!localValido) {
-      throw new Error(`"${entrada}" é um local muito específico. Por favor, digite apenas nomes de Cidades, Estados ou Países.`);
+      throw new Error(`O termo "${entrada}" encontrou ruas ou endereços específicos. Digite apenas o nome da Cidade, Estado ou País.`);
     }
 
     return {
@@ -53,7 +67,6 @@ export default function RotasPage() {
       endereco: localValido.display_name,
     };
   };
-
   const calcularCaminho = async () => {
     if (!origemInput || !destinoInput) {
       alert("Preencha a origem e o destino!");
@@ -68,7 +81,14 @@ export default function RotasPage() {
       const dadosDestino = await buscarDadosDoLocal(destinoInput);
 
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${dadosOrigem.longitude},${dadosOrigem.latitude};${dadosDestino.longitude},${dadosDestino.latitude}?overview=full&geometries=geojson`;
-      const osrmRes = await axios.get(osrmUrl);
+      
+      // CORREÇÃO: Enviando o crachá para o OSRM também por segurança
+      const osrmRes = await axios.get(osrmUrl, {
+        headers: {
+          'User-Agent': 'AppLogistica/1.0 (contato@seusite.com)',
+          'Accept': 'application/json'
+        }
+      });
 
       const coordenadasDaRota = osrmRes.data.routes[0].geometry.coordinates.map((coord: any) => ({
         latitude: coord[1],
@@ -89,8 +109,20 @@ export default function RotasPage() {
       setSelectedRouteId(novaRota.id);
 
     } catch (error: any) {
-      alert(error.message || "Erro ao traçar rota. Verifique os dados digitados.");
-      console.log(error);
+      if (error.response && error.response.data) {
+        const mensagemGPS = error.response.data.message || error.response.data.code || error.message;
+        
+        if (mensagemGPS === "NoRoute") {
+          alert("Não existe rota terrestre (estradas) entre esses dois locais.");
+        } else if (mensagemGPS?.includes("segment")) {
+          alert("O local digitado é muito amplo e caiu numa área sem ruas (ex: meio do país/estado). Tente digitar o nome de uma cidade.");
+        } else {
+          alert(`Erro do Servidor: ${mensagemGPS}`);
+        }
+      } else {
+        alert(error.message || "Erro ao traçar rota. Verifique os dados digitados.");
+      }
+      console.log("Erro completo:", error);
     } finally {
       setCarregando(false);
     }

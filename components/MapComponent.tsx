@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 
 type Coord = { latitude: number; longitude: number };
 type RouteItem = {
@@ -19,44 +19,101 @@ interface MapComponentProps {
 }
 
 export default function MapComponent({ routeState, selectedRouteId }: MapComponentProps) {
-  const mapRef = useRef<MapView>(null);
+  const currentRoute = routeState?.find((r) => r.id === selectedRouteId);
+  const temRota = currentRoute && currentRoute.coords && currentRoute.coords.length > 0;
 
-  if (!routeState || routeState.length === 0) return null;
+  let htmlContent = '';
 
-  const currentRoute = routeState.find((r) => r.id === selectedRouteId);
-  if (!currentRoute || !currentRoute.coords || currentRoute.coords.length === 0) return null;
+  if (temRota) {
+    const coordsJs = JSON.stringify(currentRoute.coords.map(c => [c.latitude, c.longitude]));
+    const statusColor = currentRoute.statusColor || '#ae0e0eff';
 
-  // CORREÇÃO: Força o enquadramento da câmera para garantir que a tela atualize
-  useEffect(() => {
-    if (mapRef.current && currentRoute.coords.length > 0) {
-      setTimeout(() => {
-        mapRef.current?.fitToCoordinates(currentRoute.coords, {
-          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true,
-        });
-      }, 500); // Pequeno atraso para o mapa renderizar primeiro
-    }
-  }, [currentRoute.coords]);
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body { margin: 0; padding: 0; background-color: #e5e5e5; }
+          #map { height: 100vh; width: 100vw; }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          var map = L.map('map', { zoomControl: false });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap'
+          }).addTo(map);
+          
+          var coords = ${coordsJs};
+          
+          var DefaultIcon = L.icon({
+              iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+              shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+              iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+          });
+          L.Marker.prototype.options.icon = DefaultIcon;
+
+          L.marker(coords[0]).addTo(map).bindPopup('Origem');
+          L.marker(coords[coords.length - 1]).addTo(map).bindPopup('Destino');
+          
+          var routeLine = L.polyline(coords, { color: '${statusColor}', weight: 5 }).addTo(map);
+          
+          setTimeout(() => { map.fitBounds(routeLine.getBounds(), { padding: [40, 40] }); }, 200);
+        </script>
+      </body>
+      </html>
+    `;
+  } else {
+    // Mapa padrão mostrando o Brasil caso não tenha rota
+    htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body { margin: 0; padding: 0; background-color: #e5e5e5; }
+          #map { height: 100vh; width: 100vw; }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          var map = L.map('map', { zoomControl: false }).setView([-14.2350, -51.9253], 4);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap'
+          }).addTo(map);
+        </script>
+      </body>
+      </html>
+    `;
+  }
 
   return (
-    <MapView
-      ref={mapRef}
-      // CORREÇÃO: provider removido para usar o mapa gratuito e estável do sistema
-      style={{ ...StyleSheet.absoluteFillObject }}
-      initialRegion={{
-        latitude: currentRoute.coords[0].latitude,
-        longitude: currentRoute.coords[0].longitude,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
-      }}
-    >
-      <Polyline 
-        coordinates={currentRoute.coords} 
-        strokeWidth={5} 
-        strokeColor={currentRoute.statusColor || '#ae0e0eff'} 
+    <View style={styles.container}>
+      <WebView 
+        source={{ html: htmlContent }} 
+        style={styles.map}
+        scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       />
-      <Marker coordinate={currentRoute.coords[0]} title="Origem" pinColor="green" />
-      <Marker coordinate={currentRoute.coords[currentRoute.coords.length - 1]} title="Destino" pinColor="red" />
-    </MapView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#e5e5e5',
+  },
+  map: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  }
+});
