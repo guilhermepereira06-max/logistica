@@ -8,7 +8,7 @@ import ImageViewer from "@/components/ImageViewer";
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { useRef, useState } from 'react';
-import { ImageSourcePropType, StyleSheet, View } from "react-native";
+import { ImageSourcePropType, StyleSheet,ScrollView, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { captureRef } from 'react-native-view-shot';
 
@@ -17,6 +17,7 @@ const PlaceholderImage = require('@/assets/images/banner.png');
 export default function Imagem() {
     const imageRef = useRef<any>(null);
     const [status, requestPermission] = MediaLibrary.usePermissions();
+    const[cameraPermissionResponse, requestCameraPermission] = ImagePicker.useCameraPermissions();
     const onSaveImageAsync = async () => {
         try {
             const localUri = await captureRef(imageRef, {
@@ -51,6 +52,23 @@ export default function Imagem() {
             alert('Nenhuma imagem selecionada');
         }
     };
+    const takePhotoAsync = async () => {
+            const permission = await ImagePicker.requestCameraPermissionsAsync();
+            if(!permission.granted){
+                alert('Permissão para acessar a câmera negada!');
+                return;
+            }
+
+        
+        let result = await ImagePicker.launchCameraAsync({
+            allowsEditing:true,
+            quality:1,
+        });
+        if(!result.canceled){
+            setSelectedImage(result.assets[0].uri);
+            setShowAppOptions(true);
+        }
+    }
     const onReset = () => {
         setShowAppOptions(false);
     };
@@ -64,6 +82,7 @@ export default function Imagem() {
         requestPermission();
      }
     return(
+        <ScrollView contentContainerStyle={styles.scrollContent}>
         <GestureHandlerRootView style={styles.container}>
             <View style={styles.imageContainer}>
                 <View ref={imageRef} collapsable={false}>
@@ -82,20 +101,30 @@ export default function Imagem() {
             ) : (
             <View style={styles.footerContainer}>
                 <Button theme="primary" label="Escolha a foto" onPress={pickImageAsync}/>
-                <Button label="Usar foto" onPress={()=>setShowAppOptions(true)}/>
+                <Button theme="primary" label="Tire uma foto" onPress={takePhotoAsync} />
+                <Button theme="primary" label="Usar foto" onPress={()=>setShowAppOptions(true)}/>
             </View>
             )}
             <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
                 <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose}/>
             </EmojiPicker>
         </GestureHandlerRootView>
+        </ScrollView>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {flex: 1, backgroundColor: '#25292e', alignItems: 'center',},
     imageContainer: {flex:1,},
+    scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
     footerContainer: {flex:1/3, alignItems: 'center',},
     optionsContainer:{position:'absolute', bottom:80,},
     optionsRow:{alignItems:'center', flexDirection:'row',},
+
 });

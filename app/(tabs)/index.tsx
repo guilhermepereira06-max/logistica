@@ -12,6 +12,7 @@ import {
 const PlaceholderImage = require("@/assets/images/banner.png");
 
 export default function Index() {
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -57,7 +58,7 @@ export default function Index() {
           </Link>
           <Link href="/rotas" asChild>
             <TouchableOpacity style={styles.navButton}>
-              <Text style={styles.navText}>BrasilAPI, Nominatim e OSRM</Text>
+              <Text style={styles.navText}>Nominatim e OSRM</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/imagem" asChild>

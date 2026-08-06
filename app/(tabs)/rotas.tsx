@@ -3,7 +3,6 @@ import {StyleSheet,Text,TextInput,TouchableOpacity,View,ActivityIndicator,Keyboa
 import { Link } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import axios from "axios";
-
 import MapComponent from "../../components/MapComponent";
 
 type Coord = { latitude: number; longitude: number };
@@ -58,7 +57,7 @@ export default function RotasPage() {
     });
 
     if (!localValido) {
-      throw new Error(`O termo "${entrada}" encontrou ruas ou endereços específicos. Digite apenas o nome da Cidade, Estado ou País.`);
+      throw new Error(`O termo "${entrada}" encontrou ruas ou endereços específicos. Digite apenas o nome da Cidade ou País.`);
     }
 
     return {
@@ -82,7 +81,6 @@ export default function RotasPage() {
 
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${dadosOrigem.longitude},${dadosOrigem.latitude};${dadosDestino.longitude},${dadosDestino.latitude}?overview=full&geometries=geojson`;
       
-      // CORREÇÃO: Enviando o crachá para o OSRM também por segurança
       const osrmRes = await axios.get(osrmUrl, {
         headers: {
           'User-Agent': 'AppLogistica/1.0 (contato@seusite.com)',
